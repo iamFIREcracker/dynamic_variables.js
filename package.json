@@ -1,0 +1,25 @@
+{
+  "name": "dynamic_variables",
+  "version": "0.0.1",
+  "description": "Dynamic variables i.e. global variables with dynamic scope",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "dynamic",
+    "global",
+    "variables",
+    "async_hooks",
+    "asynclocalstorage"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamFIREcracker/dynamic_variables.js.git"
+  },
+  "author": "Matteo Landi <matteo@matteolandi.net>",
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^2.2.1"
+  }
+}
