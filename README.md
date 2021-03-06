@@ -157,3 +157,15 @@ asynchronous operations:
       assert.equal(foo(), 5);
       assert.equal(await bar(), 42);
       assert.equal(x.get(), 5);
+
+## Changelog
+
+### 0.0.2:
+
+- Exports `DynamicVariable` for creating a _private_ dynamic variable
+
+### 0.0.1:
+
+- Exports `env`, a dynamic environment shared with all the modules loaded in
+  the current Node.js instance
+- Exports `DynamicEnvironment` for creating a _private_ dynamic environment
