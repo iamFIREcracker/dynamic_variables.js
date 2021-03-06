@@ -54,7 +54,19 @@ DynamicEnvironment.prototype.set = function (...args) {
   return this.ctx.run(bindings, body);
 };
 
+var DynamicVariable = function (value) {
+  this.ctx = new AsyncLocalStorage();
+  this.ctx.enterWith(value);
+};
+DynamicVariable.prototype.get = function () {
+  return this.ctx.getStore();
+};
+DynamicVariable.prototype.set = function (value, body) {
+  return this.ctx.run(value, body);
+};
+
 module.exports = {
   env: DynamicEnvironment(),
   DynamicEnvironment,
+  DynamicVariable,
 };

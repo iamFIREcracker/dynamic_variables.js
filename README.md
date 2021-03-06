@@ -2,7 +2,7 @@
 
 Global variables...with dynamic context.
 
-From the original [write-up](https://matteolandi.net/plan.html#day-2021-02-28)
+From the original [write-up](https://matteolandi.net/plan.html#day-2021-02-28):
 
 > Let's go back the definition that I gave earlier: _global_ variables, with
 > _dynamic_ scope. I know that the first rule of global variables is: "thou
@@ -30,7 +30,9 @@ lost.
 
 ## API
 
-### Creating a dynamic environment
+### Dynamic environments
+
+#### Creating a dynamic environment
 
 The library automatically creates a dynamic environment for you, and makes it
 available to the running Node.js instance through the `env` module export:
@@ -42,9 +44,11 @@ can create a private environment as follows:
 
     var { DynamicEnvironment } = require('dynamic_variables.js');
 
-    var env = new DynamicEnvironment();
+    var env1 = new DynamicEnvironment();
 
-### Getting a binding
+    var env2 = new DynamicEnvironment('a', 1);
+
+#### Getting a binding
 
 To get a binding (i.e. the value currently bound to a specific variable name)
 you can use the `DynamicEnvironment.prototype.get` method:
@@ -81,7 +85,7 @@ you can use the `DynamicEnvironment.prototype.get` method:
       operator: '=='
     }
 
-### Setting a new binding
+#### Setting a new binding
 
 Lastly, `DynamicEnvironment.prototype.set` can be used to set a new binding
 that's going to persist across subsequent asynchronous operations as well:
@@ -104,3 +108,52 @@ that's going to persist across subsequent asynchronous operations as well:
       assert.equal(foo(), 5);
       assert.equal(await bar(), 42);
       assert.equal(env.get("x"), 5);
+
+### Dynamic variables
+
+#### Creating a dynamic variables
+
+Sometimes creating an environment is a bit too much especially if you plan to
+store a single binding in it. You can create an instance of `DynamicVariable`
+instead:
+
+    var { DynamicVariable } = require('dynamic_variables.js');
+
+    var x = new DynamicVariable();
+
+    var y = new DynamicVariable(42);
+
+#### Getting the current value
+
+To get the value currently bound to the dynamic variable you can
+use the `DynamicVariable.prototype.get` method:
+
+    var x = new DynamicVariable(42)
+
+    > x.get()
+    42
+
+#### Setting a new value
+
+Lastly, `DynamicVariable.prototype.set` can be used to override the dynamic
+variable's value, and make sure the new value persists across subsequent
+asynchronous operations:
+
+      var x = new DynamicVariable(5);
+
+      var foo = function () {
+        return x.get();
+      };
+
+      var bar = function () {
+        return x.set(42, () => {
+          return new Promise((resolve) => {
+            setTimeout(() => resolve(foo()), 2000);
+          });
+        });
+      };
+
+      assert.equal(x.get(), 5);
+      assert.equal(foo(), 5);
+      assert.equal(await bar(), 42);
+      assert.equal(x.get(), 5);
