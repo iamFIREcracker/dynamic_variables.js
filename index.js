@@ -66,7 +66,7 @@ DynamicVariable.prototype.set = function (value, body) {
 };
 
 module.exports = {
-  env: DynamicEnvironment(),
+  env: new DynamicEnvironment(),
   DynamicEnvironment,
   DynamicVariable,
 };

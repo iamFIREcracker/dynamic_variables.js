@@ -160,6 +160,12 @@ asynchronous operations:
 
 ## Changelog
 
+### 0.0.3:
+
+- Fixes a problem where the `env` export was not a _proper_ instance of
+  `DynamicEnvironment` (we were calling the constructor function without `new`
+  before)
+
 ### 0.0.2:
 
 - Exports `DynamicVariable` for creating a _private_ dynamic variable
