@@ -160,6 +160,10 @@ asynchronous operations:
 
 ## Changelog
 
+### 0.0.4:
+
+- Rolls back few changes accidentally published to the npm registry
+
 ### 0.0.3:
 
 - Fixes a problem where the `env` export was not a _proper_ instance of
