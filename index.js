@@ -54,15 +54,16 @@ DynamicEnvironment.prototype.set = function (...args) {
   return this.ctx.run(bindings, body);
 };
 
+var privateVariableSymbol = Symbol("privateVariable");
+
 var DynamicVariable = function (value) {
-  this.ctx = new AsyncLocalStorage();
-  this.ctx.enterWith(value);
+  this.env = new DynamicEnvironment(privateVariableSymbol, value);
 };
 DynamicVariable.prototype.get = function () {
-  return this.ctx.getStore();
+  return this.env.get(privateVariableSymbol);
 };
-DynamicVariable.prototype.set = function (value, body) {
-  return this.ctx.run(value, body);
+DynamicVariable.prototype.set = function (...args) {
+  return this.env.set(privateVariableSymbol, ...args);
 };
 
 module.exports = {
