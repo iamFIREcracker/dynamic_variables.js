@@ -85,6 +85,42 @@ test("env - multiple rebinds in parallel", async () => {
   assert.equal(env.get("x"), 5);
 });
 
+test("env - change the binding of the current frame", async () => {
+  var env = new DynamicEnvironment("x", 5);
+
+  var rebind = function () {
+    return env.set("x", 101);
+  };
+
+  var bar = function () {
+    rebind();
+    return env.get("x");
+  };
+
+  assert.equal(env.get("x"), 5);
+  assert.equal(bar(), 101);
+  assert.equal(env.get("x"), 101);
+});
+
+test("env - change the binding of a nested frame", async () => {
+  var env = new DynamicEnvironment("x", 5);
+
+  var rebind = function () {
+    return env.set("x", 101);
+  };
+
+  var bar = function () {
+    return env.set("x", 42, () => {
+      rebind();
+      return env.get("x");
+    });
+  };
+
+  assert.equal(env.get("x"), 5);
+  assert.equal(bar(), 101);
+  assert.equal(env.get("x"), 5);
+});
+
 test("var - simple rebind", async () => {
   var x = new DynamicVariable(5);
 
@@ -155,5 +191,41 @@ test("var - multiple rebinds in parallel", async () => {
   assert.equal(x.get(), 5);
   assert.equal(foo(), 5);
   assert.deepEqual(await bar(), [42, 52, 72]);
+  assert.equal(x.get(), 5);
+});
+
+test("var - change the binding of the current frame", async () => {
+  var x = new DynamicVariable(5);
+
+  var rebind = function () {
+    return x.set(101);
+  };
+
+  var bar = function () {
+    rebind();
+    return x.get();
+  };
+
+  assert.equal(x.get(), 5);
+  assert.equal(bar(), 101);
+  assert.equal(x.get(), 101);
+});
+
+test("var - change the binding of a nested frame", async () => {
+  var x = new DynamicVariable(5);
+
+  var rebind = function () {
+    return x.set(101);
+  };
+
+  var bar = function () {
+    return x.set(42, () => {
+      rebind();
+      return x.get();
+    });
+  };
+
+  assert.equal(x.get(), 5);
+  assert.equal(bar(), 101);
   assert.equal(x.get(), 5);
 });

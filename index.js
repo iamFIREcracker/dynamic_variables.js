@@ -5,14 +5,20 @@ var Bindings = function (kvpairs) {
   this.data = new Map(kvpairs);
 };
 Bindings.prototype.get = function (name) {
-  assert.ok(name, `Dynamic variable name, invalid: ${name}`);
-  if (!this.data.has(name)) {
-    throw new Error(`Dynamic variable, unbound: '${name}'`);
+  if (!this.has(name)) {
+    throw new Error(`Dynamic variable, unbound: '${name.toString()}'`);
   }
   return this.data.get(name);
 };
-Bindings.prototype.set = function (kvpairs) {
-  return new Bindings([...this.data, ...kvpairs]);
+Bindings.prototype.has = function (name) {
+  assert.ok(name, `Dynamic variable name, invalid: ${name.toString()}`);
+  return this.data.has(name);
+};
+Bindings.prototype.set = function (key, value) {
+  return this.data.set(key, value);
+};
+Bindings.prototype[Symbol.iterator] = function () {
+  return this.data[Symbol.iterator]();
 };
 
 function parseKVPairs(flatBindings) {
@@ -28,30 +34,47 @@ function parseKVPairs(flatBindings) {
   return kvpairs;
 }
 
-function parseDynamicEnvironmentSetArguments(args) {
-  assert.ok(args, `Function arguments, invalid: ${args}`);
-  assert.ok(
-    args.length % 2 === 1,
-    `Function arguments, expected odd number of elements, but got: ${args.length}`
-  );
-
-  const kvpairs = parseKVPairs(args.slice(0, args.length - 1));
-  const body = args[args.length - 1];
-
-  return [kvpairs, body];
-}
-
 var DynamicEnvironment = function (...flatBindings) {
-  this.ctx = new AsyncLocalStorage();
-  this.ctx.enterWith(new Bindings(parseKVPairs(flatBindings)));
+  this.globalFrame = new Bindings(parseKVPairs(flatBindings));
+  this.dynamicFrames = new AsyncLocalStorage();
 };
 DynamicEnvironment.prototype.get = function (name) {
-  return this.ctx.getStore().get(name);
+  return this.findBindingFrameOrGlobal(name).get(name);
+};
+DynamicEnvironment.prototype.findBindingFrameOrGlobal = function (name) {
+  let frame;
+  for (let each of this.dynamicFrames.getStore() || []) {
+    if (each.has(name)) {
+      frame = each;
+      break;
+    }
+  }
+  return frame || this.globalFrame;
 };
 DynamicEnvironment.prototype.set = function (...args) {
-  const [kvpairs, body] = parseDynamicEnvironmentSetArguments(args);
-  const bindings = this.ctx.getStore().set(kvpairs);
-  return this.ctx.run(bindings, body);
+  const updatesExistingFrames = args.length % 2 === 0;
+  if (updatesExistingFrames) {
+    for (let [key, value] of parseKVPairs(args)) {
+      this.findBindingFrameOrGlobal(key).set(key, value);
+    }
+  } else {
+    const kvpairs = parseKVPairs(args.slice(0, args.length - 1));
+    const body = args[args.length - 1];
+    const bindings = new Bindings(kvpairs);
+    return this.dynamicFrames.run(
+      [bindings, ...(this.dynamicFrames.getStore() || [])],
+      body
+    );
+  }
+};
+DynamicEnvironment.prototype[Symbol.iterator] = function () {
+  const bindings = new Map(this.globalFrame);
+  for (let frame of (this.dynamicFrames.getStore() || []).reverse()) {
+    for (let [key, value] of frame) {
+      bindings.set(key, value);
+    }
+  }
+  return bindings[Symbol.iterator]();
 };
 
 var privateVariableSymbol = Symbol("privateVariable");
