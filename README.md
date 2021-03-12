@@ -109,6 +109,26 @@ that's going to persist across subsequent asynchronous operations as well:
       assert.equal(await bar(), 42);
       assert.equal(env.get("x"), 5);
 
+Note: you can omit the last argument (i.e. the body function) when calling
+`DynamicEnvironment.prototype.set`, and in which case
+the change will affect the _current_ execution context, and not just
+_subsequent_ ones:
+
+      var env = new DynamicEnvironment("x", 5);
+
+      var foo = function () {
+        return env.get("x");
+      };
+
+      var bar = function () {
+        return env.set("x", 42);
+      };
+
+      assert.equal(env.get("x"), 5);
+      assert.equal(foo(), 5);
+      await bar();
+      assert.equal(env.get("x"), 42);
+
 ### Dynamic variables
 
 #### Creating a dynamic variables
@@ -158,7 +178,34 @@ asynchronous operations:
       assert.equal(await bar(), 42);
       assert.equal(x.get(), 5);
 
+Note: you can omit the last argument (i.e. the body function) when calling
+`DynamicVariable.prototype.set`, and in which case the change will affect the
+_current_ execution context, and not just _subsequent_ ones:
+
+      var x = new DynamicVariable(5);
+
+      var foo = function () {
+        return x.get();
+      };
+
+      var bar = function () {
+        return x.set(42);
+      };
+
+      assert.equal(x.get(), 5);
+      assert.equal(foo(), 5);
+      await bar();
+      assert.equal(x.get(), 42);
+
 ## Changelog
+
+### 0.0.5 (WIP):
+
+- New "stack-of-frames"-based implementation enabling clients to interact with
+  the dynamic environment, from the _outside_. You can read more about
+  this, [here](XXX)
+- `DynamicVariable` is now implemented on top of `DynamicEnvironment` (i.e.
+  it's a dynamic environment with a single binding, whose name is _private_)
 
 ### 0.0.4:
 
