@@ -199,11 +199,11 @@ _current_ execution context, and not just _subsequent_ ones:
 
 ## Changelog
 
-### 0.0.5 (WIP):
+### 0.0.5:
 
 - New "stack-of-frames"-based implementation enabling clients to interact with
-  the dynamic environment, from the _outside_. You can read more about
-  this, [here](XXX)
+  the dynamic environment, from the _outside_ (you can read more about
+  this, [here](https://matteolandi.net/plan.html#day-2021-03-12))
 - `DynamicVariable` is now implemented on top of `DynamicEnvironment` (i.e.
   it's a dynamic environment with a single binding, whose name is _private_)
 
